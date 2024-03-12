@@ -194,10 +194,6 @@ ngx_http_sorted_querystring_args_variable(ngx_http_request_t *r, ngx_http_variab
         return NGX_OK;
     }
 
-    if (var->len > 0) {
-        return NGX_OK;
-    }
-
     if (ctx == NULL) {
         ctx = ngx_pcalloc(r->pool, sizeof(ngx_http_sorted_querystring_ctx_t));
         if (ctx == NULL) {
