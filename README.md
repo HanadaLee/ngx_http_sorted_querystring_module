@@ -84,8 +84,9 @@ http {
 Variables
 ---------
 
-* **$sorted_args** - just list the IP considered as remote IP on the connection
-
+* **$sorted_args** - args after filtering and sorting
+* **$sorted_is_args** - "?" if args after filtering and sorting is not null, or an empty string otherwise
+* **$sorted_has_args** - "&" if args after filtering and sorting is not null, or "?" otherwise
 
 Directives
 ----------

@@ -4,6 +4,11 @@
 #include <ngx_http.h>
 
 
+#define NGX_HTTP_SORTED_ARGS_VARIABLE_ARGS        0
+#define NGX_HTTP_SORTED_ARGS_VARIABLE_IS_ARGS     1
+#define NGX_HTTP_SORTED_ARGS_VARIABLE_HAS_ARGS    2
+
+
 static ngx_int_t ngx_http_sorted_args_add_variables(ngx_conf_t *cf);
 static void *ngx_http_sorted_args_create_loc_conf(ngx_conf_t *cf);
 static char *ngx_http_sorted_args_merge_loc_conf(ngx_conf_t *cf, void *parent,
@@ -81,7 +86,18 @@ static ngx_http_variable_t  ngx_http_sorted_args_vars[] = {
 
     { ngx_string("sorted_args"), NULL,
       ngx_http_sorted_args_variable,
-      0, NGX_HTTP_VAR_NOCACHEABLE, 0 },
+      NGX_HTTP_SORTED_ARGS_VARIABLE_ARGS,
+      NGX_HTTP_VAR_NOCACHEABLE, 0 },
+
+    { ngx_string("sorted_is_args"), NULL,
+      ngx_http_sorted_args_variable,
+      NGX_HTTP_SORTED_ARGS_VARIABLE_IS_ARGS,
+      NGX_HTTP_VAR_NOCACHEABLE, 0 },
+
+    { ngx_string("sorted_has_args"), NULL,
+      ngx_http_sorted_args_variable,
+      NGX_HTTP_SORTED_ARGS_VARIABLE_HAS_ARGS,
+      NGX_HTTP_VAR_NOCACHEABLE, 0 },
 
       ngx_http_null_variable
 };
@@ -187,24 +203,35 @@ ngx_http_sorted_args_filter(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 static ngx_int_t
 ngx_http_sorted_args_variable(ngx_http_request_t *r,
-    ngx_http_variable_value_t *var, uintptr_t data)
+    ngx_http_variable_value_t *v, uintptr_t data)
 {
     ngx_http_sorted_args_loc_conf_t      *sqlc;
     ngx_http_sorted_args_ctx_t           *ctx;
 
     ngx_http_sorted_args_parameter_t            *param;
-    u_char                                      *p, *ampersand, *equal, *last;
+    u_char                                      *ampersand, *equal, *last;
     ngx_queue_t                                 *q;
     ngx_flag_t                                   filter;
     ngx_str_t                                   *value;
     ngx_uint_t                                   i;
+    u_char                                      *p, *args;
+    size_t                                       args_len;
 
     sqlc = ngx_http_get_module_loc_conf(r, ngx_http_sorted_args_module);
     ctx = ngx_http_get_module_ctx(r, ngx_http_sorted_args_module);
 
     if (r->args.len == 0) {
-        var->len = 0;
-        var->data = (u_char *) "";
+
+        if (data == NGX_HTTP_SORTED_ARGS_VARIABLE_HAS_ARGS) {
+            v->len = 1;
+            v->valid = 1;
+            v->no_cacheable = 0;
+            v->not_found = 0;
+            v->data = (u_char *) "?";
+            return NGX_OK;
+        }
+
+        *v = ngx_http_variable_null_value;
         return NGX_OK;
     }
 
@@ -252,12 +279,12 @@ ngx_http_sorted_args_variable(ngx_http_request_t *r,
         ngx_queue_sort(&ctx->args_queue, ngx_http_sorted_args_cmp_parameters);
     }
 
-    var->data = ngx_pcalloc(r->pool, r->args.len + 2); // 1 char for extra ampersand and 1 for the \0
-    if (var->data == NULL) {
+    args = ngx_pcalloc(r->pool, r->args.len + 2); // 1 char for extra ampersand and 1 for the \0
+    if (args == NULL) {
         return NGX_ERROR;
     }
 
-    p = var->data;
+    p = args;
     for (q = ngx_queue_head(&ctx->args_queue);
          q != ngx_queue_sentinel(&ctx->args_queue);
          q = ngx_queue_next(q))
@@ -283,7 +310,43 @@ ngx_http_sorted_args_variable(ngx_http_request_t *r,
         }
     }
 
-    var->len = (p > var->data) ? p - var->data - 1 : 0;
+    args_len = (p > args) ? p - args - 1 : 0;
+
+    if (data == NGX_HTTP_SORTED_ARGS_VARIABLE_IS_ARGS) {
+
+        if (args_len == 0) {
+            *v = ngx_http_variable_null_value;
+            return NGX_OK;
+        }
+
+        v->len = 1;
+        v->valid = 1;
+        v->no_cacheable = 0;
+        v->not_found = 0;
+        v->data = (u_char *) "?";
+    
+        return NGX_OK;
+    }
+
+    if (data == NGX_HTTP_SORTED_ARGS_VARIABLE_HAS_ARGS) {
+
+        v->len = 1;
+        v->valid = 1;
+        v->no_cacheable = 0;
+        v->not_found = 0;
+
+        if (args_len == 0) {
+            v->data = (u_char *) "?";
+
+        } else {
+            v->data = (u_char *) "&";
+        }
+    
+        return NGX_OK;
+    }
+
+    v->data = args;
+    v->len = args_len;
 
     return NGX_OK;
 }
