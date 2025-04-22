@@ -1,7 +1,7 @@
 require File.expand_path('spec_helper', File.dirname(__FILE__))
 
-describe "check sorted querystring module" do
-  it "should expose the querystring args ordered in '$sorted_args' variable" do
+describe "check sorted args module" do
+  it "should expose the args args ordered in '$sorted_args' variable" do
     nginx_run_server do
       EventMachine.run do
         req = EventMachine::HttpRequest.new("#{nginx_address}/?c=3&=6&a=1&=5&b=2").get

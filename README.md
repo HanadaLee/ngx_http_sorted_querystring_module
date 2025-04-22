@@ -1,13 +1,13 @@
-Nginx Sorted Querystring Module
+Nginx Sorted Args Module
 ===============================
 
-This Nginx module orders the querystring parameters of an HTTP request alphanumerically and makes the sorted key-value pairs accessible using an Nginx variable.
+This Nginx module orders the args parameters of an HTTP request alphanumerically and makes the sorted key-value pairs accessible using an Nginx variable.
 
-Requests like `/index.html?b=2&a=1&c=3`, `/index.html?b=2&c=3&a=1`, `/index.html?c=3&a=1&b=2`, `/index.html?c=3&b=2&a=1` will produce the same normalized querystring `a=1&b=2&c=3` which can be accessed within Nginx using the `$sorted_args` variable.
+Requests like `/index.html?b=2&a=1&c=3`, `/index.html?b=2&c=3&a=1`, `/index.html?c=3&a=1&b=2`, `/index.html?c=3&b=2&a=1` will produce the same normalized args `a=1&b=2&c=3` which can be accessed within Nginx using the `$sorted_args` variable.
 
-This is especially useful if you want to normalize the querystring to be used in a cache key, for example when used with the `proxy_cache_key` directive.
+This is especially useful if you want to normalize the args to be used in a cache key, for example when used with the `proxy_cache_key` directive.
 
-It is also possible to remove one or more undesired query parameters by defining their name with the `sorted_args_filter` directive, like `sorted_querystring_filter_parameter <parameter_name> [<parameter_name> <parameter_name> ...];`.
+It is also possible to remove one or more undesired query parameters by defining their name with the `sorted_args_filter` directive, like `sorted_args_filter <parameter_name> [<parameter_name> <parameter_name> ...];`.
 
 _This module is not distributed with the Nginx source. See [the installation instructions](#installation)._
 
@@ -90,7 +90,7 @@ Variables
 Directives
 ----------
 
-* **sorted_querystring_filter_parameter** - list parameters to be filtered while using the `$sorted_args` variable.
+* **sorted_args_filter** - list parameters to be filtered while using the `$sorted_args` variable.
 
 
 <a id="installation"></a>Installation Instructions
@@ -99,7 +99,7 @@ Directives
 [Download Nginx Stable](http://nginx.org/en/download.html) source and uncompress it (ex.: to ../nginx). You must then run ./configure with --add-module pointing to this project as usual. Something in the lines of:
 
     $ ./configure \
-        --add-module=../nginx-sorted-querystring-module \
+        --add-module=../nginx-sorted-args-module \
         --prefix=/home/user/dev-workspace/nginx
     $ make
     $ make install
