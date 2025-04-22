@@ -3,11 +3,11 @@ Nginx Sorted Querystring Module
 
 This Nginx module orders the querystring parameters of an HTTP request alphanumerically and makes the sorted key-value pairs accessible using an Nginx variable.
 
-Requests like `/index.html?b=2&a=1&c=3`, `/index.html?b=2&c=3&a=1`, `/index.html?c=3&a=1&b=2`, `/index.html?c=3&b=2&a=1` will produce the same normalized querystring `a=1&b=2&c=3` which can be accessed within Nginx using the `$sorted_querystring_args` variable.
+Requests like `/index.html?b=2&a=1&c=3`, `/index.html?b=2&c=3&a=1`, `/index.html?c=3&a=1&b=2`, `/index.html?c=3&b=2&a=1` will produce the same normalized querystring `a=1&b=2&c=3` which can be accessed within Nginx using the `$sorted_args` variable.
 
 This is especially useful if you want to normalize the querystring to be used in a cache key, for example when used with the `proxy_cache_key` directive.
 
-It is also possible to remove one or more undesired query parameters by defining their name with the `sorted_querysting_filter_parameter` directive, like `sorted_querystring_filter_parameter <parameter_name> [<parameter_name> <parameter_name> ...];`.
+It is also possible to remove one or more undesired query parameters by defining their name with the `sorted_args_filter` directive, like `sorted_querystring_filter_parameter <parameter_name> [<parameter_name> <parameter_name> ...];`.
 
 _This module is not distributed with the Nginx source. See [the installation instructions](#installation)._
 
@@ -39,7 +39,7 @@ http {
   log_format main  '[$time_local] $host "$request" $request_time s '
                  '$status $body_bytes_sent "$http_referer" "$http_user_agent" '
                  'cache_status: "$upstream_cache_status" args: "$args '
-                 'sorted_args: "$sorted_querystring_args" ';
+                 'sorted_args: "$sorted_args" ';
 
   access_log       logs/nginx-http_access.log;
 
@@ -52,13 +52,13 @@ http {
     access_log       logs/nginx-http_access.log main;
 
     location /filtered {
-      sorted_querysting_filter_parameter v _ time b;
+      sorted_args_filter v _ time b;
 
       proxy_set_header Host "static_files_server";
       proxy_pass http://localhost:8081;
 
       proxy_cache zone;
-      proxy_cache_key "$sorted_querystring_args";
+      proxy_cache_key "$sorted_args";
       proxy_cache_valid 200 1m;
     }
 
@@ -66,7 +66,7 @@ http {
       proxy_pass http://localhost:8081;
 
       proxy_cache zone;
-      proxy_cache_key "$sorted_querystring_args";
+      proxy_cache_key "$sorted_args";
       proxy_cache_valid 200 10m;
     }
   }
@@ -84,13 +84,13 @@ http {
 Variables
 ---------
 
-* **$sorted_querystring_args** - just list the IP considered as remote IP on the connection
+* **$sorted_args** - just list the IP considered as remote IP on the connection
 
 
 Directives
 ----------
 
-* **sorted_querystring_filter_parameter** - list parameters to be filtered while using the `$sorted_querystring_args` variable.
+* **sorted_querystring_filter_parameter** - list parameters to be filtered while using the `$sorted_args` variable.
 
 
 <a id="installation"></a>Installation Instructions

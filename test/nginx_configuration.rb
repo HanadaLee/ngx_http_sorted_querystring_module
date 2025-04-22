@@ -37,14 +37,14 @@ http {
     listen        <%= nginx_port %>;
     server_name   <%= nginx_host %>;
 
-    <%= write_directive("sorted_querysting_filter_parameter", filter_parameter) %>
+    <%= write_directive("sorted_args_filter", filter_parameter) %>
 
     location / {
       proxy_set_header Host "static_files_server";
       proxy_pass http://<%= nginx_host %>:<%= nginx_port %>;
 
       proxy_cache zone;
-      proxy_cache_key "$uri$is_args$sorted_querystring_args";
+      proxy_cache_key "$uri$is_args$sorted_args";
       proxy_cache_valid 200 1m;
     }
   }
@@ -53,16 +53,16 @@ http {
     listen        <%= nginx_port %>;
     server_name   static_files_server;
 
-    <%= write_directive("sorted_querysting_filter_parameter", filter_parameter) %>
+    <%= write_directive("sorted_args_filter", filter_parameter) %>
 
     location /overwrite {
-      <%= write_directive("sorted_querysting_filter_parameter", filter_parameter2) %>
+      <%= write_directive("sorted_args_filter", filter_parameter2) %>
 
-      return 200 '{"args": "$args", "sorted_args": "$sorted_querystring_args"}';
+      return 200 '{"args": "$args", "sorted_args": "$sorted_args"}';
     }
 
     location / {
-      return 200 '{"args": "$args", "sorted_args": "$sorted_querystring_args"}';
+      return 200 '{"args": "$args", "sorted_args": "$sorted_args"}';
     }
   }
 }

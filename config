@@ -1,5 +1,5 @@
-ngx_addon_name=ngx_http_sorted_querystring_module
-SORTED_QUERYSTRING_SRCS="$ngx_addon_dir/ngx_http_sorted_querystring_module.c"
+ngx_addon_name=ngx_http_sorted_args_module
+SORTED_QUERYSTRING_SRCS="$ngx_addon_dir/ngx_http_sorted_args_module.c"
 
 if [ -n "$ngx_module_link" ]; then
     ngx_module_type=HTTP
